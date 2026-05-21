@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guía de sesión — Amanda Giraldo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #3B6D11;
+    --green-soft: #ecf3e2;
+    --green-line: #c8dba6;
+    --orange: #BA7517;
+    --orange-soft: #fbf0db;
+    --orange-line: #ecd09a;
+    --red: #A32D2D;
+    --red-soft: #fbe7e5;
+    --red-line: #eebebb;
+    --blue: #185FA5;
+    --blue-soft: #e5edf7;
+    --blue-line: #b9cde7;
+    --ink: #1f1a14;
+    --ink-soft: #4a4339;
+    --ink-mute: #8a8278;
+    --paper: #fdfbf6;
+    --card: #ffffff;
+    --line: #ece6da;
+    --line-strong: #d8d0bf;
+    --shadow: 0 1px 2px rgba(31,26,20,.04), 0 8px 24px -12px rgba(31,26,20,.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Manrope', sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.55;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { font-family: 'Fraunces', serif; font-weight: 500; letter-spacing: -0.01em; }
+  .serif { font-family: 'Fraunces', serif; }
+  #root { min-height: 100vh; }
+  button { font-family: inherit; }
+
+  /* Print styles */
+  @media print {
+    @page { margin: 14mm; size: A4; }
+    body { background: white; font-size: 11pt; }
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    .tab-section { display: block !important; page-break-before: always; }
+    .tab-section:first-of-type { page-break-before: auto; }
+    .card, .stat-card { box-shadow: none !important; border: 1px solid var(--line-strong) !important; }
+    .nav-tabs { display: none !important; }
+    .pager { display: none !important; }
+  }
+  .print-only { display: none; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Shared UI primitives -->
+  <script type="text/babel">
+const Card = ({ tone, title, eyebrow, children, style }) => {
+  const toneMap = {
+    green: { bg: 'var(--green-soft)', border: 'var(--green-line)', accent: 'var(--green)' },
+    orange: { bg: 'var(--orange-soft)', border: 'var(--orange-line)', accent: 'var(--orange)' },
+    red: { bg: 'var(--red-soft)', border: 'var(--red-line)', accent: 'var(--red)' },
+    blue: { bg: 'var(--blue-soft)', border: 'var(--blue-line)', accent: 'var(--blue)' },
+    plain: { bg: 'var(--card)', border: 'var(--line)', accent: 'var(--ink)' },
+  };
+  const t = toneMap[tone || 'plain'];
+  return (
+    <div className="card" style={{
+      background: t.bg,
+      border: `1px solid ${t.border}`,
+      borderRadius: 18,
+      padding: '20px 22px',
+      boxShadow: 'var(--shadow)',
+      ...style,
+    }}>
+      {eyebrow && (
+        <div style={{
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: '.08em',
+          textTransform: 'uppercase',
+          color: t.accent,
+          marginBottom: 8,
+        }}>{eyebrow}</div>
+      )}
+      {title && <h3 style={{ margin: '0 0 10px', fontSize: 22, color: 'var(--ink)' }}>{title}</h3>}
+      {children}
+    </div>
+  );
+};
+
+const Quote = ({ tone, children }) => {
+  const toneMap = {
+    green: { bg: '#f1f7e6', accent: 'var(--green)' },
+    orange: { bg: '#fcf3e1', accent: 'var(--orange)' },
+    red: { bg: '#fcebe9', accent: 'var(--red)' },
+    blue: { bg: '#ebf2fb', accent: 'var(--blue)' },
+    plain: { bg: '#f6f1e7', accent: 'var(--ink-soft)' },
+  };
+  const t = toneMap[tone || 'plain'];
+  return (
+    <blockquote style={{
+      margin: '14px 0',
+      padding: '14px 18px',
+      background: t.bg,
+      borderLeft: `3px solid ${t.accent}`,
+      borderRadius: '4px 12px 12px 4px',
+      fontFamily: 'Fraunces, serif',
+      fontSize: 18,
+      lineHeight: 1.5,
+      color: 'var(--ink)',
+      fontStyle: 'italic',
+      fontWeight: 400,
+    }}>{children}</blockquote>
+  );
+};
+
+const Checklist = ({ items, disabled, storageKey }) => {
+  const [checked, setChecked] = React.useState(() => {
+    if (!storageKey) return {};
+    try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; }
+  });
+  React.useEffect(() => {
+    if (storageKey) localStorage.setItem(storageKey, JSON.stringify(checked));
+  }, [checked, storageKey]);
+  return (
+    <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0', display: 'grid', gap: 8 }}>
+      {items.map((item, i) => {
+        const isOn = !!checked[i];
+        return (
+          <li key={i}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              padding: '10px 12px',
+              background: disabled ? '#f3eee5' : (isOn ? '#fff' : 'rgba(255,255,255,.55)'),
+              border: `1px solid ${isOn ? 'var(--ink-soft)' : 'var(--line)'}`,
+              borderRadius: 10,
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              transition: 'all .15s ease',
+              opacity: disabled ? .55 : 1,
+            }}>
+              <input
+                type="checkbox"
+                disabled={disabled}
+                checked={isOn}
+                onChange={e => setChecked(c => ({ ...c, [i]: e.target.checked }))}
+                style={{
+                  width: 20, height: 20, marginTop: 1, flexShrink: 0,
+                  accentColor: 'var(--green)', cursor: disabled ? 'not-allowed' : 'pointer',
+                }}
+              />
+              <span style={{
+                fontSize: 15.5,
+                color: 'var(--ink)',
+                textDecoration: disabled ? 'line-through' : 'none',
+                lineHeight: 1.4,
+              }}>{item}</span>
+            </label>
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
+const TellDoctor = ({ children }) => (
+  <div style={{
+    marginTop: 14,
+    padding: '12px 14px',
+    background: '#fff',
+    border: '1px dashed var(--blue-line)',
+    borderRadius: 10,
+    display: 'flex',
+    gap: 12,
+    alignItems: 'flex-start',
+  }}>
+    <div style={{
+      flexShrink: 0,
+      width: 26, height: 26,
+      borderRadius: 13,
+      background: 'var(--blue-soft)',
+      color: 'var(--blue)',
+      display: 'grid', placeItems: 'center',
+      fontWeight: 700, fontSize: 14,
+    }}>→</div>
+    <div>
+      <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--blue)', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 2 }}>
+        Cuéntele esto al médico
+      </div>
+      <div style={{ fontFamily: 'Fraunces, serif', fontSize: 16, fontStyle: 'italic', color: 'var(--ink)' }}>
+        "{children}"
+      </div>
+    </div>
+  </div>
+);
+
+const SectionHeader = ({ number, title, subtitle }) => (
+  <header style={{ marginBottom: 28 }}>
+    <div style={{
+      display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 6,
+    }}>
+      <div style={{
+        fontFamily: 'Fraunces, serif',
+        fontSize: 14, fontWeight: 500,
+        color: 'var(--ink-mute)',
+        letterSpacing: '.06em',
+      }}>SECCIÓN 0{number}</div>
+      <div style={{ flex: 1, height: 1, background: 'var(--line)' }}></div>
+    </div>
+    <h1 style={{ margin: '0 0 6px', fontSize: 38, lineHeight: 1.1, color: 'var(--ink)' }}>{title}</h1>
+    {subtitle && <p style={{
+      margin: 0, fontSize: 17, color: 'var(--ink-soft)',
+      fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontWeight: 400,
+    }}>{subtitle}</p>}
+  </header>
+);
+
+Object.assign(window, { Card, Quote, Checklist, TellDoctor, SectionHeader });
+  </script>
+
+  <!-- Section 1: Dolor en los pies -->
+  <script type="text/babel">
+const CauseCard = ({ number, name, tone, description, checklist, doctor, disabled, status }) => {
+  const accent = {
+    blue: 'var(--blue)', orange: 'var(--orange)', green: 'var(--green)', red: 'var(--red)', mute: 'var(--ink-mute)',
+  }[tone] || 'var(--ink)';
+  return (
+    <div className="card" style={{
+      background: disabled ? '#f7f3ea' : 'var(--card)',
+      border: `1px solid ${disabled ? 'var(--line)' : 'var(--line-strong)'}`,
+      borderRadius: 18,
+      padding: '22px 24px',
+      boxShadow: disabled ? 'none' : 'var(--shadow)',
+      opacity: disabled ? .72 : 1,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 4 }}>
+        <div style={{
+          fontFamily: 'Fraunces, serif',
+          fontSize: 36,
+          color: accent,
+          lineHeight: 1,
+          fontWeight: 500,
+        }}>0{number}</div>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ margin: 0, fontSize: 22, color: 'var(--ink)' }}>{name}</h3>
+        </div>
+        {status && (
+          <span style={{
+            fontSize: 11.5,
+            fontWeight: 700,
+            letterSpacing: '.1em',
+            padding: '5px 10px',
+            borderRadius: 999,
+            background: 'var(--green-soft)',
+            color: 'var(--green)',
+            border: '1px solid var(--green-line)',
+          }}>{status}</span>
+        )}
+      </div>
+      <p style={{ margin: '6px 0 4px', color: 'var(--ink-soft)', fontSize: 15.5 }}>{description}</p>
+      <Checklist items={checklist} disabled={disabled} storageKey={`amanda-checklist-${number}`} />
+      {doctor && <TellDoctor>{doctor}</TellDoctor>}
+    </div>
+  );
+};
+
+const Section1 = () => (
+  <div>
+    <SectionHeader number="1" title="Dolor en los pies" subtitle="Lo que nos preocupa hoy" />
+
+    <Card tone="orange" eyebrow="Antes que nada" style={{ marginBottom: 22 }}>
+      <h3 style={{ margin: '0 0 10px', fontSize: 24, color: 'var(--ink)' }}>
+        Hay algo más importante que encontrar el origen del dolor
+      </h3>
+      <p style={{ margin: '0 0 10px', fontSize: 16, color: 'var(--ink)', lineHeight: 1.65 }}>
+        Detrás del dolor en los pies, y detrás de los triglicéridos altos, el HDL bajo y la glucosa en
+        límite, hay un hilo común: <strong>inflamación</strong>.
+      </p>
+      <p style={{ margin: '0 0 10px', fontSize: 16, color: 'var(--ink-soft)', lineHeight: 1.65 }}>
+        La inflamación es como un <em>fuego lento</em> que el cuerpo tiene encendido todo el tiempo sin que
+        uno lo sienta directamente. No duele como una herida, pero va dañando por dentro poco a poco.
+      </p>
+      <p style={{ margin: 0, fontSize: 16, color: 'var(--ink)', lineHeight: 1.65 }}>
+        Cuando trabajamos en bajar esa inflamación, <strong>todo lo demás mejora</strong>: los exámenes, el
+        dolor, la energía, la presión. Eso es exactamente lo que estamos haciendo juntos.
+      </p>
+    </Card>
+
+    <Card tone="green" eyebrow="Buena noticia" style={{ marginBottom: 22 }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+        <div style={{
+          flexShrink: 0,
+          fontFamily: 'Fraunces, serif',
+          fontSize: 44,
+          color: 'var(--green)',
+          lineHeight: 1,
+          marginTop: -4,
+        }}>✓</div>
+        <div>
+          <h3 style={{ margin: '0 0 6px', fontSize: 24, color: 'var(--ink)' }}>
+            El ácido úrico salió normal — no es gota.
+          </h3>
+          <p style={{ margin: 0, fontSize: 16, color: 'var(--ink-soft)' }}>
+            Su resultado: <strong style={{ color: 'var(--green)' }}>4.2 mg/dL</strong>, en la mitad del rango normal.
+            Puede tachar esa preocupación de la lista.
+          </p>
+        </div>
+      </div>
+    </Card>
+
+    <Card style={{ marginBottom: 28 }}>
+      <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>¿Qué es el ácido úrico y la gota?</h3>
+      <p style={{ margin: 0, fontSize: 16, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+        El ácido úrico es una sustancia que el cuerpo produce al procesar ciertos alimentos. Cuando está muy
+        alto, puede formar cristalitos en las articulaciones — eso se llama <em>gota</em> y duele muchísimo,
+        especialmente en el dedo gordo del pie. El suyo está en 4.2, que es completamente normal.
+        Así que el dolor tiene otra causa que vamos a explorar.
+      </p>
+    </Card>
+
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18,
+    }}>
+      <h2 style={{ margin: 0, fontSize: 24 }}>Posibles causas del dolor</h2>
+      <div style={{ flex: 1, height: 1, background: 'var(--line)' }}></div>
+      <span style={{ fontSize: 13, color: 'var(--ink-mute)' }}>
+        Marque lo que sienta. Lo lleva a la consulta.
+      </span>
+    </div>
+
+    <div style={{ display: 'grid', gap: 18 }}>
+      <CauseCard
+        number={1}
+        tone="blue"
+        name="Neuropatía periférica"
+        description="Daño leve en los nervios, frecuente cuando los triglicéridos están altos y la glucosa lleva tiempo en el límite."
+        checklist={[
+          'Ardor o quemazón en los pies',
+          'Hormigueo o cosquilleo',
+          'Pie dormido sin razón',
+          'Dolor que empeora en la noche',
+          'Sensación de caminar sobre algo',
+        ]}
+        doctor="Siento ardor y hormigueo, especialmente de noche"
+      />
+      <CauseCard
+        number={2}
+        tone="orange"
+        name="Fascitis plantar"
+        description="Inflamación de la membrana que recubre la planta del pie. Muy común después de los 50."
+        checklist={[
+          'Dolor fuerte al dar los primeros pasos en la mañana',
+          'Dolor en el talón',
+          'Mejora después de caminar un rato',
+          'Empeora después de estar mucho tiempo de pie',
+          'Dolor al subir escaleras',
+        ]}
+        doctor="Me duele el talón al levantarme, los primeros pasos son los peores"
+      />
+      <CauseCard
+        number={3}
+        tone="red"
+        name="Circulación venosa"
+        description="Cuando el colesterol bueno (HDL) está bajo y los triglicéridos altos, la sangre puede fluir con más dificultad."
+        checklist={[
+          'Pies o tobillos hinchados al final del día',
+          'Sensación de pesadez en las piernas',
+          'Varices visibles',
+          'Pies fríos frecuentes',
+          'Calambres nocturnos',
+        ]}
+        doctor="Siento los pies pesados e hinchados al final del día"
+      />
+      <CauseCard
+        number={4}
+        tone="mute"
+        name="Gota / ácido úrico"
+        description="Descartada por el examen. Se incluye aquí para que quede claro por qué no es esta."
+        checklist={[
+          'Dolor muy intenso repentino',
+          'Inflamación y calor en el dedo gordo',
+          'Enrojecimiento local',
+        ]}
+        disabled
+        status="DESCARTADA"
+      />
+    </div>
+  </div>
+);
+
+window.Section1 = Section1;
+  </script>
+
+  <!-- Section 2: Lo que ya hemos logrado -->
+  <script type="text/babel">
+const Achievement = ({ number, title, children }) => (
+  <div className="card" style={{
+    background: 'var(--card)',
+    border: '1px solid var(--line)',
+    borderRadius: 16,
+    padding: '18px 20px',
+    display: 'flex',
+    gap: 16,
+    alignItems: 'flex-start',
+    boxShadow: 'var(--shadow)',
+  }}>
+    <div style={{
+      flexShrink: 0,
+      width: 42, height: 42, borderRadius: 21,
+      background: 'var(--green-soft)',
+      border: '1px solid var(--green-line)',
+      color: 'var(--green)',
+      display: 'grid', placeItems: 'center',
+      fontFamily: 'Fraunces, serif',
+      fontWeight: 600,
+      fontSize: 22,
+    }}>✓</div>
+    <div style={{ flex: 1 }}>
+      <div style={{
+        fontSize: 11, fontWeight: 700, letterSpacing: '.12em',
+        textTransform: 'uppercase', color: 'var(--green)', marginBottom: 2,
+      }}>Logro 0{number}</div>
+      <h3 style={{ margin: '0 0 6px', fontSize: 19, lineHeight: 1.25 }}>{title}</h3>
+      <p style={{ margin: 0, color: 'var(--ink-soft)', fontSize: 15.5, lineHeight: 1.55 }}>{children}</p>
+    </div>
+  </div>
+);
+
+const Section2 = () => (
+  <div>
+    <SectionHeader
+      number="2"
+      title="Lo que ya hemos logrado"
+      subtitle="3 meses de trabajo — los cambios que usted ya hizo son los que van a mover los exámenes. Solo necesitan más tiempo."
+    />
+
+    <Card style={{ marginBottom: 24 }}>
+      <p style={{ margin: 0, fontSize: 16.5, lineHeight: 1.7, color: 'var(--ink)' }}>
+        Amanda, llevamos <strong>tres meses trabajando juntos</strong>. Ha sido un proceso con calma, paso a
+        paso. Y aunque los exámenes todavía no muestran todo lo que ha cambiado, <em>su cuerpo sí lo está
+        sintiendo</em>. Estos son los cambios reales que ya hizo:
+      </p>
+    </Card>
+
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gap: 14,
+      marginBottom: 24,
+    }}>
+      <Achievement number={1} title="Fruta controlada">
+        Antes comía fruta en exceso durante el día. Hoy la limita a <strong>1 fruta al día</strong>.
+      </Achievement>
+      <Achievement number={2} title="Menos carbohidratos">
+        Antes el consumo de carbohidratos era muy alto. Con el tiempo se ha ido reduciendo.
+      </Achievement>
+      <Achievement number={3} title="Nada de jugos ni bebidas dulces">
+        Antes tomaba jugos, agua de panela y bebidas azucaradas a diario. <strong>Hoy no los consume</strong>.
+      </Achievement>
+      <Achievement number={4} title="El maduro ya no es costumbre">
+        Antes era una de sus comidas más frecuentes. Hoy lo come de vez en cuando, y ese día no come fruta.
+      </Achievement>
+      <Achievement number={5} title="Sin procesados, poco arroz">
+        Su alimentación es limpia. No agrega productos procesados y el arroz es ocasional.
+      </Achievement>
+      <Achievement number={6} title="Ajuste en los frijoles">
+        Estaba comiendo una taza al día. Vamos a bajar a media taza y agregar más fibra soluble: chía,
+        linaza o avena.
+      </Achievement>
+    </div>
+
+    <Card tone="blue" style={{ marginBottom: 22 }}>
+      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+        <div style={{
+          flexShrink: 0,
+          fontFamily: 'Fraunces, serif',
+          fontSize: 36, color: 'var(--blue)', lineHeight: 1, marginTop: -2,
+        }}>⏳</div>
+        <div>
+          <h3 style={{ margin: '0 0 8px', fontSize: 21 }}>Los exámenes tardan en reflejar los cambios</h3>
+          <p style={{ margin: 0, fontSize: 16, color: 'var(--ink)', lineHeight: 1.6 }}>
+            El cuerpo necesita entre <strong>3 y 6 meses</strong> de alimentación consistente para mostrar
+            resultados visibles en sangre. Lo que usted ya hizo es <strong>exactamente lo correcto</strong>.
+            <span style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', color: 'var(--blue)' }}> Seguimos.</span>
+          </p>
+        </div>
+      </div>
+    </Card>
+
+    <Card eyebrow="Coprológico — octubre 2025">
+      <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>Lo que decían sus heces hace tres meses</h3>
+      <p style={{ margin: 0, fontSize: 15.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+        En octubre sus heces mostraron <strong>almidones +++</strong> y <strong>flora bacteriana aumentada
+        con levaduras ++</strong>. Eso nos dijo que su intestino venía de años procesando muchos carbohidratos
+        y tenía un desequilibrio en las bacterias. Los cambios que ha hecho en estos tres meses están
+        ayudando a corregir eso <em>desde adentro</em>.
+      </p>
+    </Card>
+  </div>
+);
+
+window.Section2 = Section2;
+  </script>
+
+  <!-- Section 3: El estrés también es parte del cuadro -->
+  <script type="text/babel">
+const StressAction = ({ number, title, children }) => (
+  <div className="card" style={{
+    background: 'var(--card)',
+    border: '1px solid var(--line-strong)',
+    borderRadius: 16,
+    padding: '18px 20px',
+    display: 'flex',
+    gap: 16,
+    boxShadow: 'var(--shadow)',
+  }}>
+    <div style={{
+      flexShrink: 0,
+      width: 44, height: 44, borderRadius: 22,
+      background: '#fff', border: '1px solid var(--line-strong)',
+      display: 'grid', placeItems: 'center',
+      fontFamily: 'Fraunces, serif', fontWeight: 500, fontSize: 22,
+      color: 'var(--ink-soft)',
+    }}>{number}</div>
+    <div>
+      <h3 style={{ margin: '0 0 6px', fontSize: 19, lineHeight: 1.25 }}>{title}</h3>
+      <p style={{ margin: 0, color: 'var(--ink-soft)', fontSize: 15.5, lineHeight: 1.6 }}>{children}</p>
+    </div>
+  </div>
+);
+
+const Section3 = () => (
+  <div>
+    <SectionHeader
+      number="3"
+      title="El estrés también es parte del cuadro"
+      subtitle="No es solo la alimentación"
+    />
+
+    <Card style={{ marginBottom: 22 }}>
+      <p style={{ margin: 0, fontSize: 16.5, lineHeight: 1.7, color: 'var(--ink)' }}>
+        Amanda, hay algo que queremos reconocer antes de seguir. Usted no solo está trabajando en su
+        alimentación — también está cargando con el cuidado de su mamá, que tiene más de 90 años y en
+        estos días no ha estado bien. <strong>Eso pesa.</strong> Y el cuerpo lo siente.
+      </p>
+    </Card>
+
+    <Card style={{ marginBottom: 22 }}>
+      <h3 style={{ margin: '0 0 10px', fontSize: 22 }}>¿Qué es el cortisol?</h3>
+      <p style={{ margin: '0 0 10px', fontSize: 16, color: 'var(--ink-soft)', lineHeight: 1.65 }}>
+        Cuando una persona está bajo estrés constante — preocupada, sin descansar bien, pensando
+        demasiado — el cuerpo produce una hormona llamada <strong>cortisol</strong>. Esa hormona es útil
+        en momentos de peligro real, pero cuando está alta todo el tiempo <strong>hace daño</strong>:
+      </p>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 10,
+        margin: '8px 0',
+      }}>
+        {[
+          'Sube el azúcar en la sangre',
+          'Sube los triglicéridos',
+          'Baja el colesterol bueno',
+          'Dificulta bajar de peso',
+        ].map((t, i) => (
+          <div key={i} style={{
+            background: 'var(--orange-soft)',
+            border: '1px solid var(--orange-line)',
+            borderRadius: 10,
+            padding: '10px 12px',
+            fontSize: 14.5,
+            color: 'var(--ink)',
+            fontWeight: 500,
+          }}>{t}</div>
+        ))}
+      </div>
+      <p style={{ margin: '8px 0 0', fontSize: 16, color: 'var(--ink)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Fraunces, serif' }}>
+        El estrés puede estar haciendo exactamente lo que estamos intentando deshacer con la alimentación.
+      </p>
+    </Card>
+
+    <Card tone="orange" style={{ marginBottom: 28 }}>
+      <p style={{ margin: 0, fontSize: 17, color: 'var(--ink)', lineHeight: 1.65, fontFamily: 'Fraunces, serif', fontStyle: 'italic' }}>
+        No le estamos diciendo que el estrés es su culpa. Le estamos diciendo que es parte del cuadro,
+        y que merece atención igual que la alimentación.
+      </p>
+    </Card>
+
+    <h2 style={{ margin: '0 0 14px', fontSize: 24 }}>Tres cosas pequeñas que ayudan</h2>
+    <div style={{ display: 'grid', gap: 14 }}>
+      <StressAction number="1" title="5 minutos de respiración antes de dormir">
+        Inhalar contando 4, sostener 4, exhalar 4. Tres veces. Eso le dice al sistema nervioso que <em>puede descansar</em>.
+      </StressAction>
+      <StressAction number="2" title="Un momento del día solo para usted">
+        Aunque sea sentarse 10 minutos sin hacer nada, sin estar pensando en los demás. Caminar sola.
+        Tomar el tinto despacio.
+      </StressAction>
+      <StressAction number="3" title="Nombrar lo que siente">
+        A veces solo decirlo en voz alta o escribirlo ayuda a que el cuerpo no lo cargue solo.
+      </StressAction>
+    </div>
+  </div>
+);
+
+window.Section3 = Section3;
+  </script>
+
+  <!-- Section 4: Comparativo de exámenes -->
+  <script type="text/babel">
+const TrendIcon = ({ dir, tone }) => {
+  const color = { red: 'var(--red)', amber: 'var(--orange)', green: 'var(--green)' }[tone];
+  const arrow = dir === 'up' ? '↑' : dir === 'down' ? '↓' : dir === 'flat' ? '→' : '✓';
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      color, fontWeight: 700,
+    }}>
+      <span style={{ fontSize: 20, lineHeight: 1 }}>{arrow}</span>
+    </span>
+  );
+};
+
+const ExamRow = ({ name, oct, may, tone, dir, note, isLast }) => {
+  const toneColor = { red: 'var(--red)', amber: 'var(--orange)', green: 'var(--green)' }[tone];
+  const toneBg = { red: 'var(--red-soft)', amber: 'var(--orange-soft)', green: 'var(--green-soft)' }[tone];
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'minmax(160px, 1.4fr) 1fr 1fr minmax(180px, 1.6fr)',
+      gap: 10,
+      alignItems: 'center',
+      padding: '14px 16px',
+      borderBottom: isLast ? 'none' : '1px solid var(--line)',
+      background: 'var(--card)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{
+          width: 8, height: 8, borderRadius: 4, background: toneColor, flexShrink: 0,
+        }}></span>
+        <span style={{ fontSize: 15.5, fontWeight: 600 }}>{name}</span>
+      </div>
+      <div style={{ fontSize: 15, color: 'var(--ink-soft)', fontVariantNumeric: 'tabular-nums' }}>{oct}</div>
+      <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
+        <span style={{
+          background: toneBg, color: toneColor,
+          padding: '3px 9px', borderRadius: 6,
+        }}>{may}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--ink-soft)' }}>
+        <TrendIcon dir={dir} tone={tone} />
+        <span>{note}</span>
+      </div>
+    </div>
+  );
+};
+
+const PendingExam = ({ name, reason }) => (
+  <div style={{
+    padding: '14px 16px',
+    background: 'var(--card)',
+    border: '1px solid var(--line)',
+    borderRadius: 12,
+  }}>
+    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--blue)', marginBottom: 4 }}>{name}</div>
+    <div style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.45 }}>{reason}</div>
+  </div>
+);
+
+const Section4 = () => (
+  <div>
+    <SectionHeader number="4" title="Comparativo de exámenes" subtitle="Qué cambió entre octubre y mayo" />
+
+    <div style={{
+      background: 'var(--card)',
+      border: '1px solid var(--line-strong)',
+      borderRadius: 18,
+      overflow: 'hidden',
+      boxShadow: 'var(--shadow)',
+      marginBottom: 28,
+    }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(160px, 1.4fr) 1fr 1fr minmax(180px, 1.6fr)',
+        gap: 10,
+        padding: '12px 16px',
+        background: '#f7f1e4',
+        borderBottom: '1px solid var(--line-strong)',
+        fontSize: 11.5,
+        fontWeight: 700,
+        letterSpacing: '.1em',
+        textTransform: 'uppercase',
+        color: 'var(--ink-mute)',
+      }}>
+        <div>Examen</div>
+        <div>Oct 2025</div>
+        <div>May 2026</div>
+        <div>Tendencia</div>
+      </div>
+      <ExamRow name="Triglicéridos"      oct="223 mg/dL" may="247 mg/dL" tone="red"   dir="up"   note="subió — preocupa" />
+      <ExamRow name="HDL (col. bueno)"   oct="36 mg/dL"  may="34 mg/dL"  tone="red"   dir="down" note="bajó — preocupa" />
+      <ExamRow name="Colesterol total"   oct="210 mg/dL" may="212 mg/dL" tone="amber" dir="flat" note="similar" />
+      <ExamRow name="Glucosa en ayunas"  oct="101 mg/dL" may="99 mg/dL"  tone="green" dir="down" note="mejoró" />
+      <ExamRow name="TSH tiroides"       oct="1.84"      may="2.77"      tone="green" dir="ok"   note="normal en ambos" />
+      <ExamRow name="Ácido úrico"        oct="—"         may="4.2 mg/dL" tone="green" dir="ok"   note="normal" isLast />
+    </div>
+
+    <Card tone="blue">
+      <h3 style={{ margin: '0 0 4px', fontSize: 22 }}>Exámenes que aún faltarían</h3>
+      <p style={{ margin: '0 0 14px', color: 'var(--ink-soft)', fontSize: 15 }}>
+        Para ver el cuadro completo y no decidir tratamientos a ciegas.
+      </p>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: 12,
+      }}>
+        <PendingExam
+          name="Insulina en ayunas"
+          reason="Detecta resistencia a la insulina antes de que aparezca en la glucosa."
+        />
+        <PendingExam
+          name="PCR ultrasensible"
+          reason="Inflamación interna silenciosa, muy ligada a triglicéridos altos."
+        />
+        <PendingExam
+          name="Vitamina D"
+          reason="Afecta huesos, ánimo e inmunidad. Muy deficiente en mayores de 50."
+        />
+        <PendingExam
+          name="Hemoglobina glicosilada (HbA1c)"
+          reason="Promedio real de glucosa en los últimos 3 meses."
+        />
+        <PendingExam
+          name="Omega-3 index"
+          reason="Para saber el nivel real antes de empezar a suplementar."
+        />
+      </div>
+    </Card>
+  </div>
+);
+
+window.Section4 = Section4;
+  </script>
+
+  <!-- Section 5: ¿Qué significa? -->
+  <script type="text/babel">
+const ExplainCard = ({ number, title, children, tone }) => {
+  const accent = { green: 'var(--green)', orange: 'var(--orange)', red: 'var(--red)', blue: 'var(--blue)' }[tone || 'green'];
+  return (
+    <div className="card" style={{
+      background: 'var(--card)',
+      border: '1px solid var(--line)',
+      borderRadius: 18,
+      padding: '24px 26px',
+      boxShadow: 'var(--shadow)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: accent,
+      }}></div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 10 }}>
+        <div style={{
+          fontFamily: 'Fraunces, serif', fontSize: 14, fontWeight: 500,
+          color: accent, letterSpacing: '.08em',
+        }}>TARJETA 0{number}</div>
+      </div>
+      <h3 style={{ margin: '0 0 10px', fontSize: 24, lineHeight: 1.2 }}>{title}</h3>
+      <div style={{ color: 'var(--ink-soft)', fontSize: 16, lineHeight: 1.6 }}>{children}</div>
+    </div>
+  );
+};
+
+const Section5 = () => (
+  <div>
+    <SectionHeader number="5" title="¿Qué significa? Mi guía" subtitle="Lo que está pasando en su cuerpo — en palabras simples" />
+
+    <div style={{ display: 'grid', gap: 18 }}>
+      <ExplainCard number={1} tone="orange" title="¿De dónde vienen los triglicéridos altos?">
+        <p style={{ margin: '0 0 8px' }}>
+          Imagínese que el hígado es una <strong>bodega</strong>. Todo lo que usted come y el cuerpo no usa de
+          inmediato, la bodega lo empaca en grasa para guardar. Esa grasa empacada es los triglicéridos.
+        </p>
+        <p style={{ margin: '0 0 8px' }}>
+          ¿Y qué es lo que más empaca? <strong>No el cerdo ni la gallina</strong> — sino el azúcar y los
+          almidones: el arroz, el plátano, la yuca, el pan, y también la fruta cuando se come de más.
+        </p>
+        <p style={{ margin: 0 }}>
+          El cerdo de su finca, en realidad, <strong>no es el culpable</strong>.
+        </p>
+      </ExplainCard>
+
+      <ExplainCard number={2} tone="orange" title="¿Y los frijoles que le mandamos a comer?">
+        <p style={{ margin: '0 0 8px' }}>
+          Los frijoles tienen <strong>fibra y proteína</strong>, que son buenas. Pero también tienen bastante
+          almidón — una taza tiene casi <strong>40 gramos de carbohidratos</strong>.
+        </p>
+        <p style={{ margin: '0 0 8px' }}>
+          Si se comen todos los días en cantidad grande, pueden estar aportando a subir los triglicéridos
+          sin que uno lo note.
+        </p>
+        <p style={{ margin: 0 }}>
+          No hay que eliminarlos, pero sí <strong>moderar</strong>: media taza, una vez al día, siempre
+          acompañados de proteína o grasa para que el azúcar no suba tan rápido.
+        </p>
+      </ExplainCard>
+
+      <ExplainCard number={3} tone="blue" title="El HDL bajo: el camión de la basura">
+        <p style={{ margin: '0 0 8px' }}>
+          En la sangre hay dos tipos de colesterol. Uno es como <strong>basura en la calle</strong>.
+          El HDL es <strong>el camión que la recoge</strong> y la lleva a donde no hace daño.
+        </p>
+        <p style={{ margin: '0 0 8px' }}>
+          El de usted tiene poco camión.
+        </p>
+        <p style={{ margin: 0 }}>
+          Lo que sube el camión es el <strong>ejercicio, el aguacate, el huevo entero y las grasas
+          buenas</strong> — no las pastillas.
+        </p>
+      </ExplainCard>
+
+      <ExplainCard number={4} tone="green" title="La glucosa en 99">
+        <p style={{ margin: '0 0 8px' }}>
+          99 es <strong>casi el límite</strong>. No es diabetes todavía, pero el cuerpo está avisando. Si no
+          se ajusta la alimentación, con el tiempo puede cruzar esa línea.
+        </p>
+        <p style={{ margin: 0 }}>
+          La buena noticia es que <strong>bajó de 101 a 99</strong> — algo ya está funcionando.
+        </p>
+      </ExplainCard>
+
+      <ExplainCard number={5} tone="red" title="El patrón completo">
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 10,
+          margin: '4px 0 14px',
+          fontFamily: 'Fraunces, serif',
+          fontSize: 18,
+        }}>
+          <span style={{ background: 'var(--red-soft)', color: 'var(--red)', padding: '6px 12px', borderRadius: 999, fontWeight: 600 }}>
+            Triglicéridos altos
+          </span>
+          <span style={{ color: 'var(--ink-mute)' }}>+</span>
+          <span style={{ background: 'var(--red-soft)', color: 'var(--red)', padding: '6px 12px', borderRadius: 999, fontWeight: 600 }}>
+            HDL bajo
+          </span>
+          <span style={{ color: 'var(--ink-mute)' }}>+</span>
+          <span style={{ background: 'var(--orange-soft)', color: 'var(--orange)', padding: '6px 12px', borderRadius: 999, fontWeight: 600 }}>
+            Glucosa en límite
+          </span>
+        </div>
+        <p style={{ margin: '0 0 8px' }}>
+          El cuerpo está <strong>procesando mal los carbohidratos</strong>. No es un problema de comer
+          grasa — es un problema de demasiado azúcar y almidón, <em>incluso de fuentes que parecen
+          sanas</em> como la fruta o los granos.
+        </p>
+      </ExplainCard>
+    </div>
+  </div>
+);
+
+window.Section5 = Section5;
+  </script>
+
+  <!-- Section 6: Plan nutricional -->
+  <script type="text/babel">
+const FoodColumn = ({ tone, label, sublabel, items }) => {
+  const colors = {
+    green:  { bg: 'var(--green-soft)',  border: 'var(--green-line)',  accent: 'var(--green)' },
+    amber:  { bg: 'var(--orange-soft)', border: 'var(--orange-line)', accent: 'var(--orange)' },
+    red:    { bg: 'var(--red-soft)',    border: 'var(--red-line)',    accent: 'var(--red)' },
+  }[tone];
+  return (
+    <div style={{
+      background: colors.bg,
+      border: `1px solid ${colors.border}`,
+      borderRadius: 18,
+      padding: '20px 22px',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4,
+      }}>
+        <div style={{
+          width: 14, height: 14, borderRadius: 7, background: colors.accent,
+        }}></div>
+        <h3 style={{ margin: 0, fontSize: 22, color: colors.accent }}>{label}</h3>
+      </div>
+      <p style={{ margin: '0 0 14px', color: 'var(--ink-soft)', fontSize: 14, fontStyle: 'italic' }}>{sublabel}</p>
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
+        {items.map((it, i) => (
+          <li key={i} style={{
+            background: '#fff',
+            padding: '10px 12px',
+            borderRadius: 10,
+            fontSize: 15,
+            color: 'var(--ink)',
+            border: `1px solid ${colors.border}`,
+          }}>{it}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+const ActionCard = ({ number, title, eyebrow, children }) => (
+  <div className="card" style={{
+    background: 'var(--card)',
+    border: '1px solid var(--line-strong)',
+    borderRadius: 18,
+    padding: '22px 24px',
+    boxShadow: 'var(--shadow)',
+    display: 'flex',
+    gap: 18,
+    alignItems: 'flex-start',
+  }}>
+    <div style={{
+      flexShrink: 0,
+      width: 52, height: 52, borderRadius: 26,
+      background: 'var(--green-soft)', color: 'var(--green)',
+      display: 'grid', placeItems: 'center',
+      fontFamily: 'Fraunces, serif', fontSize: 26, fontWeight: 600,
+      border: '1px solid var(--green-line)',
+    }}>{number}</div>
+    <div style={{ flex: 1 }}>
+      {eyebrow && <div style={{
+        fontSize: 11.5, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase',
+        color: 'var(--green)', marginBottom: 4,
+      }}>{eyebrow}</div>}
+      <h3 style={{ margin: '0 0 8px', fontSize: 22 }}>{title}</h3>
+      <div style={{ color: 'var(--ink-soft)', fontSize: 16, lineHeight: 1.6 }}>{children}</div>
+    </div>
+  </div>
+);
+
+const Section6 = () => (
+  <div>
+    <SectionHeader number="6" title="Plan nutricional" subtitle="¿Qué hacemos desde ya?" />
+
+    <h2 style={{ margin: '0 0 14px', fontSize: 24 }}>Semáforo de alimentos</h2>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+      gap: 16,
+      marginBottom: 36,
+    }}>
+      <FoodColumn
+        tone="green"
+        label="Comer libremente"
+        sublabel="Sin contar, sin culpa"
+        items={[
+          'Cerdo, gallina, pollo de finca',
+          'Huevo entero con yema',
+          'Aguacate',
+          'Vegetales verdes (espinaca, brócoli, ahuyama)',
+          'Grasas naturales (manteca de la misma finca)',
+        ]}
+      />
+      <FoodColumn
+        tone="amber"
+        label="Con moderación"
+        sublabel="Máx. 1 vez al día, porción pequeña"
+        items={[
+          '1 fruta entera — preferir manzana, pera o fresas',
+          'Arroz, porción del tamaño de un puño',
+          'Frijoles o lentejas, media taza cocida',
+          'Plátano verde cocido, ocasional',
+        ]}
+      />
+      <FoodColumn
+        tone="red"
+        label="Reducir o evitar"
+        sublabel="Lo que más sube los triglicéridos"
+        items={[
+          'Jugo de fruta, aunque sea natural',
+          'Plátano maduro frecuente',
+          'Panela, azúcar, agua de panela',
+          'Pan, galletas, harinas',
+          'Bebidas dulces',
+        ]}
+      />
+    </div>
+
+    <h2 style={{ margin: '0 0 14px', fontSize: 24 }}>Acciones prioritarias</h2>
+    <div style={{ display: 'grid', gap: 16 }}>
+      <ActionCard number="1" eyebrow="La prioridad más alta" title="Omega-3">
+        <p style={{ margin: '0 0 10px' }}>
+          El omega-3 es probablemente <strong>la intervención más poderosa</strong> que podemos hacer
+          ahora mismo para bajar los triglicéridos y reducir la inflamación. Se encuentra naturalmente
+          en el pescado de mar graso.
+        </p>
+        <div style={{
+          background: 'var(--green-soft)',
+          border: '1px solid var(--green-line)',
+          borderRadius: 10, padding: '12px 14px', marginBottom: 10,
+        }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--green)', marginBottom: 4 }}>
+            Opción 1 — sardinas o atún en lata
+          </div>
+          <div style={{ fontSize: 15.5, color: 'var(--ink)' }}>
+            Las sardinas en agua o aceite de oliva se consiguen en cualquier tienda y son baratas.
+            <strong> Dos o tres veces por semana</strong> es suficiente para notar diferencia.
+          </div>
+        </div>
+        <div style={{
+          background: 'var(--blue-soft)',
+          border: '1px solid var(--blue-line)',
+          borderRadius: 10, padding: '12px 14px', marginBottom: 10,
+        }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: 4 }}>
+            Opción 2 — suplemento
+          </div>
+          <div style={{ fontSize: 15.5, color: 'var(--ink)' }}>
+            Si no consigue o no le gustan, busque cápsulas de aceite de pescado que digan
+            <strong> EPA+DHA</strong> en la etiqueta. Una o dos al día con las comidas.
+          </div>
+        </div>
+        <div style={{
+          background: 'var(--orange-soft)',
+          border: '1px solid var(--orange-line)',
+          borderRadius: 10, padding: '12px 14px',
+        }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--orange)', marginBottom: 4 }}>
+            Opción 3 — fuentes vegetales
+          </div>
+          <div style={{ fontSize: 15.5, color: 'var(--ink)' }}>
+            <strong>Chía y linaza molida</strong> tienen omega-3 vegetal. No es tan potente como el del
+            pescado, pero suma. Una cucharada al día en la comida o en agua.
+          </div>
+        </div>
+      </ActionCard>
+
+      <ActionCard number="2" eyebrow="Intestino" title="Kéfir — para el intestino y para todo">
+        <p style={{ margin: 0 }}>
+          El kéfir es una <strong>leche fermentada</strong> llena de bacterias buenas. Ayuda a corregir ese
+          desequilibrio intestinal que mostraron sus heces en octubre. <strong>Un vaso pequeño al día</strong>,
+          de preferencia en ayunas o antes de dormir. Se consigue en supermercados o se puede hacer en casa
+          con leche y gránulos de kéfir que venden en tiendas naturistas.
+        </p>
+      </ActionCard>
+
+      <ActionCard number="3" eyebrow="Grasas buenas" title="Más grasas saludables en el día">
+        <p style={{ margin: '0 0 10px' }}>
+          Las grasas buenas <strong>suben el HDL</strong> — el camión de la basura — y ayudan a bajar la
+          inflamación. Agregar a su rutina:
+        </p>
+        <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--ink-soft)', fontSize: 15.5, lineHeight: 1.7 }}>
+          <li><strong>Aguacate</strong> — medio aguacate al día si puede</li>
+          <li><strong>Semillas</strong> — chía, linaza, ajonjolí</li>
+          <li><strong>Frutos secos</strong> — un puñado de nueces o maní natural al día</li>
+          <li><strong>Crema de maní natural</strong> (sin azúcar agregada)</li>
+        </ul>
+      </ActionCard>
+
+      <ActionCard number="4" eyebrow="Movimiento" title="Caminata diaria — mantenerla">
+        <p style={{ margin: 0 }}>
+          Caminar <strong>30 a 45 minutos al día</strong> es una de las formas más efectivas de subir el
+          HDL y bajar la inflamación. Si ya lo está haciendo, sígalo haciendo. Si hay días difíciles por
+          el cuidado de su mamá, <strong>con 20 minutos ya cuenta</strong>.
+        </p>
+      </ActionCard>
+    </div>
+  </div>
+);
+
+window.Section6 = Section6;
+  </script>
+
+  <!-- Section 7: Llegando a la cita médica -->
+  <script type="text/babel">
+const Field = ({ label, tone, children }) => {
+  const accent = { orange: 'var(--orange)', red: 'var(--red)', blue: 'var(--blue)' }[tone] || 'var(--ink-mute)';
+  return (
+    <div>
+      <div style={{
+        fontSize: 11.5, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase',
+        color: accent, marginBottom: 2,
+      }}>{label}</div>
+      <div style={{ fontSize: 15.5, color: 'var(--ink-soft)', lineHeight: 1.55 }}>{children}</div>
+    </div>
+  );
+};
+
+const MedCard = ({ number, name, family, purpose, context, sideEffects, question }) => (
+  <div className="card" style={{
+    background: 'var(--card)',
+    border: '1px solid var(--line-strong)',
+    borderRadius: 18,
+    boxShadow: 'var(--shadow)',
+    overflow: 'hidden',
+  }}>
+    <div style={{
+      padding: '18px 24px',
+      background: '#f7f1e4',
+      borderBottom: '1px solid var(--line)',
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: 14,
+    }}>
+      <div style={{
+        fontFamily: 'Fraunces, serif', fontSize: 32, color: 'var(--ink-mute)', lineHeight: 1, fontWeight: 500,
+      }}>0{number}</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
+          {family}
+        </div>
+        <h3 style={{ margin: '2px 0 0', fontSize: 24 }}>{name}</h3>
+      </div>
+    </div>
+    <div style={{ padding: '20px 24px', display: 'grid', gap: 14 }}>
+      <Field label="Para qué sirve">{purpose}</Field>
+      <Field label="El detalle en su caso" tone="orange">{context}</Field>
+      <Field label="Efectos secundarios" tone="red">{sideEffects}</Field>
+      <div style={{
+        marginTop: 4,
+        padding: '14px 16px',
+        background: 'var(--blue-soft)',
+        border: '1px solid var(--blue-line)',
+        borderRadius: 12,
+      }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: 4 }}>
+          Su pregunta al médico
+        </div>
+        <div style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: 17.5, color: 'var(--ink)' }}>
+          "{question}"
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const Section7 = () => (
+  <div>
+    <SectionHeader number="7" title="Llegando a la cita médica" subtitle="Si el médico le formula, usted ya sabe qué preguntar" />
+
+    <Card style={{ marginBottom: 28 }}>
+      <p style={{ margin: 0, fontSize: 16.5, lineHeight: 1.65, color: 'var(--ink)' }}>
+        El médico va a revisar sus exámenes y probablemente va a querer formularle algo. Eso está bien — él
+        hace su trabajo. Pero <strong>usted tiene derecho a entender</strong> para qué es cada cosa, qué
+        efectos puede tener, y <strong>cuándo tiene sentido esperar</strong> antes de empezar.
+      </p>
+      <p style={{ margin: '12px 0 0', fontFamily: 'Fraunces, serif', fontSize: 19, fontStyle: 'italic', color: 'var(--green)' }}>
+        Sus valores no son de emergencia.
+      </p>
+    </Card>
+
+    <div style={{ display: 'grid', gap: 18 }}>
+      <MedCard
+        number={1}
+        family="Fibratos"
+        name="Fenofibrato"
+        purpose="Bajar triglicéridos y subir HDL."
+        context="Tiene sentido cuando los triglicéridos están muy altos (más de 500) o cuando no bajan con dieta. Los suyos están en 247 — alto, pero todavía hay margen para intentar primero con alimentación."
+        sideEffects="Dolor muscular, puede afectar el hígado, molestia digestiva. No combina bien con algunos otros medicamentos."
+        question="¿Podemos esperar 3 meses con cambios de alimentación antes de empezar el medicamento?"
+      />
+      <MedCard
+        number={2}
+        family="Estatinas"
+        name="Atorvastatina / Rosuvastatina"
+        purpose="Bajar el colesterol LDL."
+        context='Su LDL no está en nivel crítico (129 mg/dL, "cerca del óptimo"). Además, las estatinas pueden subir la glucosa — justo lo que necesitamos controlar.'
+        sideEffects="Fatiga, dolor muscular, en algunos casos sube el azúcar en sangre."
+        question="¿Mi colesterol LDL realmente justifica estatina con estos niveles?"
+      />
+      <MedCard
+        number={3}
+        family="Diuréticos (si los formulan para la tensión)"
+        name="Hidroclorotiazida"
+        purpose="Bajar la presión arterial."
+        context="Los diuréticos tiazídicos pueden subir los triglicéridos y la glucosa — lo opuesto a lo que necesita. Alternativas como losartán o enalapril tienen mejor perfil metabólico para su caso."
+        sideEffects="Aumento de triglicéridos, aumento de glucosa, pérdida de potasio, calambres."
+        question="¿Podría ser losartán en vez de diurético, dado que mis triglicéridos ya están altos?"
+      />
+    </div>
+
+    <Card tone="green" style={{ marginTop: 28 }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+        <div style={{
+          flexShrink: 0,
+          fontFamily: 'Fraunces, serif',
+          fontSize: 44, color: 'var(--green)', lineHeight: 1, marginTop: -4,
+        }}>✓</div>
+        <div>
+          <h3 style={{ margin: '0 0 8px', fontSize: 24 }}>Sus valores no son de emergencia.</h3>
+          <p style={{ margin: 0, fontSize: 17, color: 'var(--ink)', lineHeight: 1.6 }}>
+            Tiene <strong>margen real</strong> para mejorar con alimentación. <strong>Pida tiempo.</strong>
+          </p>
+        </div>
+      </div>
+    </Card>
+  </div>
+);
+
+window.Section7 = Section7;
+  </script>
+
+  <!-- Main App -->
+  <script type="text/babel">
+const TABS = [
+  { n: 1, label: 'Dolor en los pies',          short: 'Dolor' },
+  { n: 2, label: 'Lo que ya logramos',         short: 'Logros' },
+  { n: 3, label: 'El estrés y su cuerpo',      short: 'Estrés' },
+  { n: 4, label: 'Comparativo de exámenes',    short: 'Exámenes' },
+  { n: 5, label: '¿Qué significa?',             short: 'Significa' },
+  { n: 6, label: 'Plan nutricional',           short: 'Plan' },
+  { n: 7, label: 'Cita médica',                short: 'Cita' },
+];
+
+const App = () => {
+  const [active, setActive] = React.useState(() => {
+    const h = parseInt((window.location.hash || '').replace('#s', ''), 10);
+    return (h >= 1 && h <= 7) ? h : 1;
+  });
+  const scrollRef = React.useRef(null);
+
+  React.useEffect(() => {
+    window.location.hash = `s${active}`;
+    if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [active]);
+
+  const sections = [Section1, Section2, Section3, Section4, Section5, Section6, Section7];
+  const Current = sections[active - 1];
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--paper)' }}>
+      {/* Header band */}
+      <div className="no-print" style={{
+        borderBottom: '1px solid var(--line)',
+        background: '#fff',
+      }}>
+        <div style={{ maxWidth: 980, margin: '0 auto', padding: '18px 24px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--green)', marginBottom: 4 }}>
+                Guía de sesión clínica
+              </div>
+              <h1 style={{ margin: 0, fontSize: 28, lineHeight: 1.15 }}>Amanda Giraldo Puerta</h1>
+              <div style={{ fontSize: 14, color: 'var(--ink-soft)', marginTop: 4 }}>
+                58 años · Mujer · Mayo 2026
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', fontSize: 13, color: 'var(--ink-soft)' }}>
+              <div style={{ fontFamily: 'Fraunces, serif', fontSize: 17, color: 'var(--ink)', fontWeight: 500 }}>
+                Luis Fernández
+              </div>
+              <div>Médico · KiwiForLife</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <nav className="nav-tabs" style={{
+          maxWidth: 980, margin: '0 auto', padding: '0 16px',
+          display: 'flex', gap: 4, overflowX: 'auto',
+          borderTop: '1px solid var(--line)',
+        }}>
+          {TABS.map(t => {
+            const on = active === t.n;
+            return (
+              <button
+                key={t.n}
+                onClick={() => setActive(t.n)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: on ? '2px solid var(--green)' : '2px solid transparent',
+                  padding: '14px 14px 12px',
+                  cursor: 'pointer',
+                  fontSize: 14.5,
+                  fontWeight: on ? 700 : 500,
+                  color: on ? 'var(--green)' : 'var(--ink-soft)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  whiteSpace: 'nowrap',
+                  transition: 'color .15s ease',
+                }}
+              >
+                <span style={{
+                  display: 'inline-grid', placeItems: 'center',
+                  width: 22, height: 22, borderRadius: 11,
+                  background: on ? 'var(--green)' : 'var(--line)',
+                  color: on ? '#fff' : 'var(--ink-soft)',
+                  fontSize: 12, fontWeight: 700,
+                  fontFamily: 'Manrope, sans-serif',
+                }}>{t.n}</span>
+                <span className="tab-label-full">{t.label}</span>
+                <span className="tab-label-short">{t.short}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Body */}
+      <main ref={scrollRef} style={{ flex: 1 }}>
+        <div style={{ maxWidth: 880, margin: '0 auto', padding: '32px 24px 24px' }}>
+          <div className="screen-only-active">
+            {sections.map((S, i) => (
+              <section key={i} className="tab-section" style={{
+                display: (active === i + 1) ? 'block' : 'none',
+              }}>
+                <S />
+              </section>
+            ))}
+          </div>
+
+          {/* Pager */}
+          <div className="pager no-print" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 12,
+            marginTop: 40,
+            paddingTop: 20,
+            borderTop: '1px solid var(--line)',
+          }}>
+            <button
+              onClick={() => setActive(a => Math.max(1, a - 1))}
+              disabled={active === 1}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--line-strong)',
+                padding: '10px 16px',
+                borderRadius: 10,
+                cursor: active === 1 ? 'not-allowed' : 'pointer',
+                opacity: active === 1 ? .4 : 1,
+                fontSize: 14.5,
+                fontWeight: 600,
+                color: 'var(--ink-soft)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}
+            >← Anterior</button>
+            <div style={{ fontSize: 13, color: 'var(--ink-mute)' }}>
+              {active} de {TABS.length} — <span className="serif" style={{ fontStyle: 'italic' }}>{TABS[active - 1].label}</span>
+            </div>
+            <button
+              onClick={() => setActive(a => Math.min(7, a + 1))}
+              disabled={active === 7}
+              style={{
+                background: active === 7 ? 'transparent' : 'var(--green)',
+                color: active === 7 ? 'var(--ink-soft)' : '#fff',
+                border: active === 7 ? '1px solid var(--line-strong)' : '1px solid var(--green)',
+                padding: '10px 16px',
+                borderRadius: 10,
+                cursor: active === 7 ? 'not-allowed' : 'pointer',
+                opacity: active === 7 ? .4 : 1,
+                fontSize: 14.5,
+                fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}
+            >Siguiente →</button>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer style={{
+        marginTop: 'auto',
+        borderTop: '1px solid var(--line)',
+        background: '#fff',
+      }}>
+        <div style={{
+          maxWidth: 980, margin: '0 auto', padding: '20px 24px',
+          display: 'flex', flexWrap: 'wrap', gap: 14,
+          alignItems: 'baseline', justifyContent: 'space-between',
+        }}>
+          <div>
+            <div style={{ fontFamily: 'Fraunces, serif', fontSize: 17, color: 'var(--ink)', fontWeight: 500 }}>
+              Luis Fernández · Médico
+            </div>
+            <div style={{ fontSize: 13.5, color: 'var(--ink-soft)' }}>
+              KiwiForLife — medicina funcional y nutrición
+            </div>
+          </div>
+          <div style={{
+            fontSize: 12.5, color: 'var(--ink-mute)', maxWidth: 460,
+            fontStyle: 'italic', fontFamily: 'Fraunces, serif', lineHeight: 1.5,
+          }}>
+            La interpretación de estos resultados es orientativa y no reemplaza la consulta médica personalizada.
+          </div>
+        </div>
+      </footer>
+
+      <style>{`
+        .tab-label-short { display: none; }
+        @media (max-width: 760px) {
+          .tab-label-full { display: none; }
+          .tab-label-short { display: inline; }
+          .nav-tabs button { padding: 12px 10px !important; }
+        }
+        @media print {
+          .screen-only-active .tab-section { display: block !important; page-break-before: always; }
+          .screen-only-active .tab-section:first-child { page-break-before: auto; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+  </script>
+</body>
+</html>
